@@ -110,8 +110,8 @@
         .seg__back::before,
         .seg__back::after {
             display: block;
-            height: 40vh;
-            height: clamp(30vh, 40vh, 40vh);
+            height: 50vh;
+            height: clamp(40vh, 50vh, 40vh);
             color: var(--top-text-color);
             background: var(--top-bg);
             transition: color 500ms ease-in-out, background-color 500ms ease-in-out;
@@ -119,8 +119,8 @@
             border-radius: 16px 16px 0 0;
             backface-visiblity: hidden;
             transform-style: preserve-3d;
-            width: 40vw;
-            width: clamp(40vw, 40vw, 50vw);
+            width: 48vw;
+            width: clamp(48vw, 48vw, 30vw);
             transform: translateZ(0)
         }
 
@@ -139,7 +139,7 @@
 
         .seg__bottom::after {
             display: block;
-            margin-top: -40vh
+            margin-top: clamp(-40vh, -50vh, -40vh)
         }
 
         .seg__back::before,
