@@ -50,7 +50,6 @@
 
         .flip-clock {
             gap: 16px;
-            transform: scale(clamp(0.4, 1.2vw, 1));
             margin: 10px auto;
             transform-origin: center;
             text-align: center;
@@ -97,7 +96,7 @@
             position: relative;
             padding-bottom: 40vh;
             font-size: 50vh;
-            font-size: clamp(40vh, 53vh, 40vw);
+            font-size: clamp(45vh, 53vh, 40vw);
             line-height: 1.1;
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.0052vh;
@@ -110,8 +109,8 @@
         .seg__back::before,
         .seg__back::after {
             display: block;
-            height: 50vh;
-            height: clamp(40vh, 50vh, 40vh);
+            height: 60vh;
+            height: clamp(40vh, 60vh, 40vh);
             color: var(--top-text-color);
             background: var(--top-bg);
             transition: color 500ms ease-in-out, background-color 500ms ease-in-out;
@@ -119,8 +118,8 @@
             border-radius: 16px 16px 0 0;
             backface-visiblity: hidden;
             transform-style: preserve-3d;
-            width: 48vw;
-            width: clamp(48vw, 48vw, 30vw);
+            width: 60vw;
+            width: clamp(45vw, 60vw, 20vw);
             transform: translateZ(0)
         }
 
@@ -139,7 +138,7 @@
 
         .seg__bottom::after {
             display: block;
-            margin-top: clamp(-40vh, -50vh, -40vh)
+            margin-top: -40vh
         }
 
         .seg__back::before,
