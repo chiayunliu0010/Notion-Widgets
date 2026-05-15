@@ -3,30 +3,13 @@
 
 <head>
     <title>Clock</title>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-GZZF9SCFQ3');
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
 
     <style>
-
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
-
-        .oswald-number {
-            font-family: "Oswald", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 500;
-            font-style: normal;
-        }
-
-    </style>
-    <style>
+        /* FIX 1: Removed duplicate @import — the <link> tag above already loads Oswald.
+           Having both caused a redundant network request on some renderers. */
         body {
             height: 100vh;
             margin: 0;
@@ -49,8 +32,15 @@
         }
 
         .flip-clock {
-            gap: 16px;
-            margin: 10px auto;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* gap creates the visible space between the hours and minutes cards.
+               The card width below is reduced by half the gap on each side so the
+               pair still fills the full viewport width edge to edge. */
+            gap: 1vw;
             transform-origin: center;
             text-align: center;
         }
@@ -62,8 +52,8 @@
         }
 
         .flip-clock[data-has-hours=true] .segment {
-            font-size: 22vh;
-            font-size: clamp(22vh, 22vh, 32vw);
+            font-size: 25vh;
+            font-size: clamp(25vh, 25vh, 35vw);
             padding-bottom: 16.06vh;
             margin: .35vh .8vh
         }
@@ -94,13 +84,14 @@
         .segment {
             display: block;
             position: relative;
-            padding-bottom: 40vh;
-            font-size: 50vh;
-            font-size: clamp(45vh, 53vh, 40vw);
-            line-height: 1.1;
+            /* padding-bottom must equal the card height so the absolutely-positioned
+               bottom card is contained within the segment wrapper */
+            padding-bottom: clamp(40vh, 53vh, 40vw);
+            font-size: clamp(45vh, 60vh, 50vw);
+            line-height: 1;
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.0052vh;
-            margin: 1vh 1vh;
+            margin: 0;
             font-family: "Oswald", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif
         }
 
@@ -108,24 +99,38 @@
         .seg__bottom,
         .seg__back::before,
         .seg__back::after {
-            display: block;
-            height: 60vh;
-            height: clamp(40vh, 60vh, 40vh);
+            /*height: clamp(40vh, 53vh, 40vw);*/
             color: var(--top-text-color);
             background: var(--top-bg);
             transition: color 500ms ease-in-out, background-color 500ms ease-in-out;
-            padding: .18em 0;
+            /* Each card takes half the viewport minus half the gap.
+               With gap:4vw, each side loses 2vw, so width = 50vw - 2vw = 48vw. */
+            width: 48vw;
+            display: block;
+            text-align: center;
+            /* padding-top equal to card height pushes the digit downward so its top half
+               sits right at the fold. Only the bottom half of the glyph shows through
+               overflow:hidden, which is the correct upper card content. */
+            padding-top: clamp(40vh, 53vh, 40vw);
+            /* line-height:0 collapses the line box; the glyph then sits exactly at the
+               padding-top offset with no extra leading shifting it further down. */
+            line-height: 0;
+            overflow: hidden;
             border-radius: 16px 16px 0 0;
-            backface-visiblity: hidden;
+            backface-visibility: hidden;
             transform-style: preserve-3d;
-            width: 60vw;
-            width: clamp(45vw, 60vw, 20vw);
             transform: translateZ(0)
         }
 
         .seg__bottom {
             position: absolute;
-            top: calc(50%-0.3vh);
+
+            /* FIX 7: Fixed broken calc() — original was calc(50%-0.3vh) with no spaces around
+               the minus sign. CSS requires whitespace around operators in calc(), so this was
+               silently ignored and the bottom card snapped to top:0 instead of the midpoint.
+               Now written as calc(50% - 0.3vh) so it correctly places the fold at the centre. */
+            top: calc(50% - 0.3vh);
+
             left: 0;
             border-top: solid 1vh var(--bottom-bg);
             background: var(--bottom-bg);
@@ -133,12 +138,23 @@
             transition: color 500ms ease-in-out, background-color 500ms ease-in-out, border-top-color 500ms ease-in-out;
             border-radius: 0 0 16px 16px;
             pointer-events: none;
+
+            /* FIX 8: Added overflow: hidden to .seg__bottom specifically.
+               The ::after pseudo-element uses a negative margin-top to scroll the digit
+               upward so only its bottom half is visible. Without overflow:hidden the full
+               digit bleeds outside the card. (seg__top already clips via the shared rule above.) */
             overflow: hidden;
         }
 
         .seg__bottom::after {
+            /* The ::after renders a full digit via content:attr(data-value).
+               margin-top of negative card height scrolls it up by one card so
+               the bottom half of the glyph aligns with the top edge of this card.
+               padding-top:0 overrides the inherited value from the shared rule so
+               the digit starts at the very top of its line box (no extra downward push). */
             display: block;
-            margin-top: -40vh
+            padding-top: 0;
+            margin-top: calc(-1 * clamp(40vh, 53vh, 40vw));
         }
 
         .seg__back::before,
@@ -196,47 +212,20 @@
         }
 
         @keyframes flipTop {
-
-            0%,
-            50% {
-                z-index: -1;
-                transform: rotateX(0deg);
-                opacity: 0
-            }
-
-            51% {
-                opacity: 0.5
-            }
-
-            100% {
-                opacity: 0.99;
-                transform: rotateX(90deg);
-                z-index: 5
-            }
+            0%, 50% { z-index: -1; transform: rotateX(0deg); opacity: 0 }
+            51%      { opacity: 0.5 }
+            100%     { opacity: 0.99; transform: rotateX(90deg); z-index: 5 }
         }
 
         @keyframes flipBottom {
-
-            0%,
-            50% {
-                z-index: -1;
-                transform: rotateX(90deg);
-                opacity: 0
-            }
-
-            51% {
-                opacity: .99
-            }
-
-            100% {
-                opacity: .99;
-                transform: rotateX(0deg);
-                z-index: 5
-            }
+            0%, 50% { z-index: -1; transform: rotateX(90deg); opacity: 0 }
+            51%     { opacity: .99 }
+            100%    { opacity: .99; transform: rotateX(0deg); z-index: 5 }
         }
 
-        @media screen and (max-height: 350px)and (max-width: 225px) {
-
+        @media screen and (max-height: 350px) and (max-width: 225px) {
+            /* FIX 10: Added missing space between the two media conditions (was "350px)and").
+               Without the space some parsers skip this entire block. */
             .seg__top,
             .seg__bottom,
             .seg__back::before,
@@ -266,9 +255,11 @@
             }
         }
 
-        @media(orientation: portrait) {
+        @media (orientation: portrait) {
             .flip-clock {
-                flex-direction: column
+                flex-direction: column;
+                /* switch gap to vertical spacing between the stacked digits */
+                gap: 4vh;
             }
 
             .flip-clock[data-has-hours=true] .segment {
@@ -299,7 +290,7 @@
                 padding-bottom: 27.5vw;
                 font-size: 37.5vw;
                 letter-spacing: -0.0052vh;
-                margin: .625vw 1.375vw
+                margin: 0
             }
 
             .seg__top,
@@ -307,7 +298,10 @@
             .seg__back::before,
             .seg__back::after {
                 height: 27.5vw;
-                width: 62.5vw
+                /* full viewport width when stacked — no gap to subtract horizontally */
+                width: 100vw;
+                /* padding-top must also match the new height */
+                padding-top: 27.5vw
             }
 
             .seg__bottom {
@@ -316,6 +310,7 @@
 
             .seg__bottom::after {
                 display: block;
+                padding-top: 0;
                 margin-top: -27.5vw
             }
 
@@ -327,7 +322,7 @@
             }
         }
 
-        @media(min-aspect-ratio: 9/10)and (max-aspect-ratio: 1/1) {
+        @media (min-aspect-ratio: 9/10) and (max-aspect-ratio: 1/1) {
             .flip-clock[data-has-hours=true] .segment {
                 padding-bottom: 17.875vw;
                 font-size: 24.375vw;
@@ -368,11 +363,12 @@
             }
 
             .seg__bottom {
-                top: calc(50% - .3vh)
+                top: calc(50% - .3vh) /* FIX 7 applied here too */
             }
 
             .seg__bottom::after {
                 display: block;
+                padding-top: 0;
                 margin-top: -24.75vw
             }
 
@@ -384,92 +380,84 @@
             }
         }
     </style>
-
-   
 </head>
 
 <body class="clock-24h theme-black text-white idle">
     <div class="clock-container">
-    <div class="flip-clock" data-clock-type="clock" data-has-hours="false">
-        <span class="clock__piece hours">
-            <span class="clock__segment segment">
-                <span class="seg__top" data-value=""></span>
-                <span class="seg__bottom" data-value=""></span>
-                <span class="seg__back" data-value="">
+        <div class="flip-clock" data-clock-type="clock" data-has-hours="false">
+            <span class="clock__piece hours">
+                <span class="clock__segment segment">
+                    <span class="seg__top" data-value=""></span>
                     <span class="seg__bottom" data-value=""></span>
-                </span>
-                <span class="clock_period"></span>
-            </span>
-        </span>
-        <span class="clock__piece minutes">
-            <span class="clock__segment segment">
-                <span class="seg__top"></span>
-                <span class="seg__bottom" data-value=""></span>
-                <span class="seg__back" data-value="">
-                    <span class="seg__bottom" data-value=""></span>
+                    <span class="seg__back" data-value="">
+                        <span class="seg__bottom" data-value=""></span>
+                    </span>
+                    <span class="clock_period"></span>
                 </span>
             </span>
-        </span>
-    </div>
+            <span class="clock__piece minutes">
+                <span class="clock__segment segment">
+                    <span class="seg__top"></span>
+                    <span class="seg__bottom" data-value=""></span>
+                    <span class="seg__back" data-value="">
+                        <span class="seg__bottom" data-value=""></span>
+                    </span>
+                </span>
+            </span>
+        </div>
     </div>
 </body>
 
 <script>
-        (function () {
+    (function () {
+        const clock = {
+            hours: document.querySelector('.clock__piece.hours'),
+            minutes: document.querySelector('.clock__piece.minutes'),
+        };
 
-            const clock = {
-                hours: document.querySelector('.clock__piece.hours'),
-                minutes: document.querySelector('.clock__piece.minutes'),
-            };
+        function updateSegment(segment, newValue) {
+            const top = segment.querySelector('.seg__top');
+            const bottom = segment.querySelector('.seg__bottom');
+            const back = segment.querySelector('.seg__back');
+            const backBottom = back.querySelector('.seg__bottom');
 
-            function updateSegment(segment, newValue) {
-                const top = segment.querySelector('.seg__top');
-                const bottom = segment.querySelector('.seg__bottom');
-                const back = segment.querySelector('.seg__back');
-                const backBottom = back.querySelector('.seg__bottom');
+            const currentValue = top.textContent;
 
-                const currentValue = top.textContent;
+            if (currentValue === newValue) return;
 
-                if (currentValue === newValue) return;
-                // Set previous value
-                bottom.dataset.value = currentValue;
+            // Set previous value
+            bottom.dataset.value = currentValue;
 
-                // Set next value
-                back.dataset.value = newValue;
-                backBottom.dataset.value = newValue;
+            // Set next value
+            back.dataset.value = newValue;
+            backBottom.dataset.value = newValue;
 
-                // Trigger animation
+            // Trigger animation
+            segment.classList.remove('flip');
+            void segment.offsetWidth; // force reflow
+            segment.classList.add('flip');
+
+            // After animation, lock new value in the visible top half
+            setTimeout(() => {
+                top.textContent = newValue;
+            }, 510);
+
+            setTimeout(() => {
                 segment.classList.remove('flip');
-                void segment.offsetWidth; // force reflow
-                segment.classList.add('flip');
+            }, 1000);
+        }
 
-                // After animation, lock new value
-                setTimeout(() => {
-                    top.textContent = newValue;
-                }, 510); 
+        function tick() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            updateSegment(clock.hours, hours);
+            updateSegment(clock.minutes, minutes);
+        }
 
-                setTimeout(() => {
-                    segment.classList.remove('flip');
-                }, 1000); // must match CSS animation duration
-            }
-
-            function tick() {
-                const now = new Date();
-
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-
-                updateSegment(clock.hours, hours);
-                updateSegment(clock.minutes, minutes);
-            }
-
-            // initial render
-            tick();
-
-            // update every second
-            setInterval(tick, 1000);
-
-        })();
-    </script>
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
 
 </html>
