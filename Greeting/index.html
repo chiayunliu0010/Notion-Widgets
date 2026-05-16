@@ -1,463 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
-
 <head>
-    <title>Clock</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <title>HI THERE!</title>
     <style>
-        /* FIX 1: Removed duplicate @import — the <link> tag above already loads Oswald.
-           Having both caused a redundant network request on some renderers. */
         body {
-            height: 100vh;
+            background-color: #191919;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 300;
+            font-style: normal;
             margin: 0;
-            overflow: hidden;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            background: #191919;
-            transition: background-color 500ms ease-in-out;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-            font-weight: 500;
-            --top-text-color: #e3deac;
-            --bottom-text-color: #edeac5;
-            --period-text-color: #dece72;
-            --top-bg: #b09300;
-            --bottom-bg: #bc9c00;
-            --picker-bg-color: var(--top-bg);
-            --button-color: #fff
         }
 
-        .flip-clock {
+        .greeting_box {
+            background-color: #383838;
+            height: clamp(50px, 5vh, 10vh);
             width: 100%;
-            height: 100vh;
+            border-radius: clamp(5px, 10px, 50vh);
+            padding: 10px 1.5rem;
             display: flex;
-            justify-content: center;
             align-items: center;
-            /* gap creates the visible space between the hours and minutes cards.
-               The card width below is reduced by half the gap on each side so the
-               pair still fills the full viewport width edge to edge. */
-            gap: 1vw;
-            transform-origin: center;
-            text-align: center;
         }
 
-        .flip-clock *,
-        .flip-clock *:before,
-        .flip-clock *:after {
-            box-sizing: border-box
-        }
-
-        .flip-clock[data-has-hours=true] .segment {
-            font-size: 25vh;
-            font-size: clamp(25vh, 25vh, 35vw);
-            padding-bottom: 16.06vh;
-            margin: .35vh .8vh
-        }
-
-        .flip-clock[data-has-hours=true] .seg__top,
-        .flip-clock[data-has-hours=true] .seg__bottom,
-        .flip-clock[data-has-hours=true] .seg__back::before,
-        .flip-clock[data-has-hours=true] .seg__back::after {
-            height: 16.06vh;
-            width: 36vh;
-            width: clamp(36vh, 36vh, 36vw)
-        }
-
-        .flip-clock[data-has-hours=true] .seg__bottom::after {
-            margin-top: -16.06vh
-        }
-
-        .flip-clock[data-has-hours=true] .clock_period {
-            top: 1.8vh;
-            left: clamp(7px, 2.2vh, 30px) !important;
-            font-size: 2.9vh
-        }
-
-        .clock__piece {
-            display: inline-block
-        }
-
-        .segment {
-            display: block;
-            position: relative;
-            /* padding-bottom must equal the card height so the absolutely-positioned
-               bottom card is contained within the segment wrapper */
-            padding-bottom: clamp(40vh, 53vh, 40vw);
-            font-size: clamp(45vh, 60vh, 50vw);
-            line-height: 1;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.0052vh;
-            margin: 0;
-            font-family: "Oswald", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif
-        }
-
-        .seg__top,
-        .seg__bottom,
-        .seg__back::before,
-        .seg__back::after {
-            /*height: clamp(40vh, 53vh, 40vw);*/
-            color: var(--top-text-color);
-            background: var(--top-bg);
-            transition: color 500ms ease-in-out, background-color 500ms ease-in-out;
-            /* Each card takes half the viewport minus half the gap.
-               With gap:4vw, each side loses 2vw, so width = 50vw - 2vw = 48vw. */
-            width: 48vw;
-            display: block;
-            text-align: center;
-            /* padding-top equal to card height pushes the digit downward so its top half
-               sits right at the fold. Only the bottom half of the glyph shows through
-               overflow:hidden, which is the correct upper card content. */
-            padding-top: clamp(40vh, 53vh, 40vw);
-            /* line-height:0 collapses the line box; the glyph then sits exactly at the
-               padding-top offset with no extra leading shifting it further down. */
-            line-height: 0;
-            overflow: hidden;
-            border-radius: 16px 16px 0 0;
-            backface-visibility: hidden;
-            transform-style: preserve-3d;
-            transform: translateZ(0)
-        }
-
-        .seg__bottom {
-            position: absolute;
-
-            /* FIX 7: Fixed broken calc() — original was calc(50%-0.3vh) with no spaces around
-               the minus sign. CSS requires whitespace around operators in calc(), so this was
-               silently ignored and the bottom card snapped to top:0 instead of the midpoint.
-               Now written as calc(50% - 0.3vh) so it correctly places the fold at the centre. */
-            top: calc(50% - 0.3vh);
-
-            left: 0;
-            border-top: solid 1vh var(--bottom-bg);
-            background: var(--bottom-bg);
-            color: var(--bottom-text-color);
-            transition: color 500ms ease-in-out, background-color 500ms ease-in-out, border-top-color 500ms ease-in-out;
-            border-radius: 0 0 16px 16px;
-            pointer-events: none;
-
-            /* FIX 8: Added overflow: hidden to .seg__bottom specifically.
-               The ::after pseudo-element uses a negative margin-top to scroll the digit
-               upward so only its bottom half is visible. Without overflow:hidden the full
-               digit bleeds outside the card. (seg__top already clips via the shared rule above.) */
-            overflow: hidden;
-        }
-
-        .seg__bottom::after {
-            /* The ::after renders a full digit via content:attr(data-value).
-               margin-top of negative card height scrolls it up by one card so
-               the bottom half of the glyph aligns with the top edge of this card.
-               padding-top:0 overrides the inherited value from the shared rule so
-               the digit starts at the very top of its line box (no extra downward push). */
-            display: block;
-            padding-top: 0;
-            margin-top: calc(-1 * clamp(40vh, 53vh, 40vw));
-        }
-
-        .seg__back::before,
-        .seg__bottom::after {
-            content: attr(data-value)
-        }
-
-        .seg__back {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            left: 0%;
-            pointer-events: none
-        }
-
-        .seg__back::before {
-            position: relative;
-            z-index: -1;
-            overflow: hidden;
-            border-bottom: solid .3vh var(--bottom-bg);
-            transition: border-bottom-color 500ms ease-in-out
-        }
-
-        .clock_period {
-            display: none;
-            position: absolute;
-            top: 2.5vh;
-            left: clamp(10px, 3vh, 40px) !important;
-            font-size: 4vh;
-            z-index: 5;
-            color: var(--period-text-color);
-            transition: color 500ms ease-in-out;
-            letter-spacing: .156667vh
-        }
-
-        .clock__piece:first-of-type .clock_period {
-            display: block
-        }
-
-        .flip .seg__back::before {
-            animation: flipTop .5s cubic-bezier(0.37, 0.01, 0.94, 0.35);
-            animation-fill-mode: both;
-            transform-origin: center bottom
-        }
-
-        .flip .seg__back .seg__bottom {
-            transform-origin: center top;
-            animation-fill-mode: both;
-            animation: flipBottom 1s cubic-bezier(0.15, 0.45, 0.28, 1)
-        }
-
-        body.clock-12h .clock_period,
-        body.clock-24h .clock_period {
-            display: none !important
-        }
-
-        @keyframes flipTop {
-            0%, 50% { z-index: -1; transform: rotateX(0deg); opacity: 0 }
-            51%      { opacity: 0.5 }
-            100%     { opacity: 0.99; transform: rotateX(90deg); z-index: 5 }
-        }
-
-        @keyframes flipBottom {
-            0%, 50% { z-index: -1; transform: rotateX(90deg); opacity: 0 }
-            51%     { opacity: .99 }
-            100%    { opacity: .99; transform: rotateX(0deg); z-index: 5 }
-        }
-
-        @media screen and (max-height: 350px) and (max-width: 225px) {
-            /* FIX 10: Added missing space between the two media conditions (was "350px)and").
-               Without the space some parsers skip this entire block. */
-            .seg__top,
-            .seg__bottom,
-            .seg__back::before,
-            .seg__back::after {
-                height: 70vh;
-                width: 76.5vh;
-                border-radius: 12px 12px 0 0
-            }
-
-            .segment {
-                padding-bottom: 31.5vh;
-                font-size: 42.3vh
-            }
-
-            .seg__bottom {
-                border-radius: 0 0 12px 12px
-            }
-
-            .seg__bottom::after {
-                margin-top: -31.5vh
-            }
-
-            .clock_period {
-                top: 4.05vh;
-                left: 4.5vh;
-                font-size: 6.3vh
-            }
-        }
-
-        @media (orientation: portrait) {
-            .flip-clock {
-                flex-direction: column;
-                /* switch gap to vertical spacing between the stacked digits */
-                gap: 4vh;
-            }
-
-            .flip-clock[data-has-hours=true] .segment {
-                padding-bottom: 20vw;
-                font-size: 27vw;
-                margin: .45vw 1vw
-            }
-
-            .flip-clock[data-has-hours=true] .seg__top,
-            .flip-clock[data-has-hours=true] .seg__bottom,
-            .flip-clock[data-has-hours=true] .seg__back::before,
-            .flip-clock[data-has-hours=true] .seg__back::after {
-                height: 20vw;
-                width: 45vw
-            }
-
-            .flip-clock[data-has-hours=true] .seg__bottom::after {
-                margin-top: -20vw
-            }
-
-            .flip-clock[data-has-hours=true] .clock_period {
-                top: 2.07vw;
-                left: 2.43vw;
-                font-size: 3.24vw
-            }
-
-            .segment {
-                padding-bottom: 27.5vw;
-                font-size: 37.5vw;
-                letter-spacing: -0.0052vh;
-                margin: 0
-            }
-
-            .seg__top,
-            .seg__bottom,
-            .seg__back::before,
-            .seg__back::after {
-                height: 27.5vw;
-                /* full viewport width when stacked — no gap to subtract horizontally */
-                width: 100vw;
-                /* padding-top must also match the new height */
-                padding-top: 27.5vw
-            }
-
-            .seg__bottom {
-                top: calc(50% - .3vh)
-            }
-
-            .seg__bottom::after {
-                display: block;
-                padding-top: 0;
-                margin-top: -27.5vw
-            }
-
-            .clock_period {
-                top: 2.8125vw;
-                left: 3.375vw;
-                font-size: 4.5vw;
-                letter-spacing: .08811vw
-            }
-        }
-
-        @media (min-aspect-ratio: 9/10) and (max-aspect-ratio: 1/1) {
-            .flip-clock[data-has-hours=true] .segment {
-                padding-bottom: 17.875vw;
-                font-size: 24.375vw;
-                margin: .40625vw .89375vw
-            }
-
-            .flip-clock[data-has-hours=true] .seg__top,
-            .flip-clock[data-has-hours=true] .seg__bottom,
-            .flip-clock[data-has-hours=true] .seg__back::before,
-            .flip-clock[data-has-hours=true] .seg__back::after {
-                height: 17.875vw;
-                width: 40.625vw
-            }
-
-            .flip-clock[data-has-hours=true] .seg__bottom::after {
-                margin-top: -17.875vw
-            }
-
-            .flip-clock[data-has-hours=true] .clock_period {
-                top: 2.03125vw;
-                left: 2.4375vw;
-                font-size: 3.25vw
-            }
-
-            .segment {
-                padding-bottom: 24.75vw;
-                font-size: 33.75vw;
-                letter-spacing: -0.00468vh;
-                margin: .5625vw 1.2375vw
-            }
-
-            .seg__top,
-            .seg__bottom,
-            .seg__back::before,
-            .seg__back::after {
-                height: 24.75vw;
-                width: 56.25vw
-            }
-
-            .seg__bottom {
-                top: calc(50% - .3vh) /* FIX 7 applied here too */
-            }
-
-            .seg__bottom::after {
-                display: block;
-                padding-top: 0;
-                margin-top: -24.75vw
-            }
-
-            .clock_period {
-                top: 3.125vw;
-                left: 3.75vw;
-                font-size: 5vw;
-                letter-spacing: .0979vw
-            }
+        .greeting_text {
+            font-size: clamp(1vh, 24px, 50vh);
+            color: #D4D4D4;
+            margin-left: 10px;
+            margin-right: 10px;
         }
     </style>
 </head>
 
-<body class="clock-24h theme-black text-white idle">
-    <div class="clock-container">
-        <div class="flip-clock" data-clock-type="clock" data-has-hours="false">
-            <span class="clock__piece hours">
-                <span class="clock__segment segment">
-                    <span class="seg__top" data-value=""></span>
-                    <span class="seg__bottom" data-value=""></span>
-                    <span class="seg__back" data-value="">
-                        <span class="seg__bottom" data-value=""></span>
-                    </span>
-                    <span class="clock_period"></span>
-                </span>
-            </span>
-            <span class="clock__piece minutes">
-                <span class="clock__segment segment">
-                    <span class="seg__top"></span>
-                    <span class="seg__bottom" data-value=""></span>
-                    <span class="seg__back" data-value="">
-                        <span class="seg__bottom" data-value=""></span>
-                    </span>
-                </span>
-            </span>
-        </div>
+<body>
+    <div class="greeting_box">
+        <div class="greeting_text"></div>
     </div>
-</body>
 
-<script>
-    (function () {
-        const clock = {
-            hours: document.querySelector('.clock__piece.hours'),
-            minutes: document.querySelector('.clock__piece.minutes'),
-        };
+    <script>
+        const greetings = [
+            "☀️ Morning!",
+            "☕ Good Afternoon!",
+            "🌇 Good Evening!",
+            "🌙 Good Night!",
+            "💤 Night night!",
+            "🎂🎈 Happy Birthday!"
+        ];
 
-        function updateSegment(segment, newValue) {
-            const top = segment.querySelector('.seg__top');
-            const bottom = segment.querySelector('.seg__bottom');
-            const back = segment.querySelector('.seg__back');
-            const backBottom = back.querySelector('.seg__bottom');
-
-            const currentValue = top.textContent;
-
-            if (currentValue === newValue) return;
-
-            // Set previous value
-            bottom.dataset.value = currentValue;
-
-            // Set next value
-            back.dataset.value = newValue;
-            backBottom.dataset.value = newValue;
-
-            // Trigger animation
-            segment.classList.remove('flip');
-            void segment.offsetWidth; // force reflow
-            segment.classList.add('flip');
-
-            // After animation, lock new value in the visible top half
-            setTimeout(() => {
-                top.textContent = newValue;
-            }, 510);
-
-            setTimeout(() => {
-                segment.classList.remove('flip');
-            }, 1000);
-        }
+        const box = document.querySelector('.greeting_text');
 
         function tick() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            updateSegment(clock.hours, hours);
-            updateSegment(clock.minutes, minutes);
+            const now = new Date(); // Always get the current time
+            const hour = now.getHours();
+            const month = now.getMonth(); // 0-indexed: 10 = November
+            const date = now.getDate();  // Fixed: getDate() for day of month, not getDay()
+
+            if (month === 10 && date === 8) {
+                box.textContent = greetings[5];
+            } else if (hour >= 6 && hour < 12) {
+                box.textContent = greetings[0];
+            } else if (hour >= 12 && hour < 17) {
+                box.textContent = greetings[1];
+            } else if (hour >= 17 && hour < 19) {
+                box.textContent = greetings[2];
+            } else if (hour >= 19 && hour < 22) {
+                box.textContent = greetings[3];
+            } else {
+                box.textContent = greetings[4];
+            }
         }
 
         tick();
-        setInterval(tick, 1000);
-    })();
-</script>
-
-</html>
+        setInterval(tick, 1000); // Update every second
+    </script>
+</body>
